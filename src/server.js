@@ -13,12 +13,19 @@ const handleListen = () => console.log(`Listening on http://localhost:3000`);
 const server = http.createServer(app); // express app에서부터 http서버를 만든다.
 const wss = new WebSocket.Server({server})  // http서버를 wss서버로 
 
-const handleConnection = (soket) => {
-    console.log(soket)
-    // 이때의 소켓은 브라우저와 서버의 연결을 의미
-}
+// const handleConnection = (soket) => {
+//     console.log(soket)
+//     // 이때의 소켓은 브라우저와 서버의 연결을 의미
+// }
 
-wss.on("connection", handleConnection)
+wss.on("connection", (soket)=> {
+    console.log('connected to broswer');
+    soket.on('close', () => console.log('disconnected from browser'))
+    soket.on('message', message => {
+        console.log(message.toString())
+    })
+    soket.send('hello!!!')
+})
 // 위의 경우 http와 wss를 합친 상태다.
 // 물론 위의 경우처럼 같은 서버에서 http와 wss 둘다 작동시킬 수도 있지만
 // 둘 중 하나만 사용해도 된다.
