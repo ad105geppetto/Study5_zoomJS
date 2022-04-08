@@ -20,12 +20,19 @@ const wss = new WebSocket.Server({server})  // http서버를 wss서버로
 
 const sockets = [];
 
-wss.on("connection", (soket)=> {
-    sockets.push(soket)
+wss.on("connection", (socket)=> {
+    sockets.push(socket);
+    socket['nickname'] = 'Anon'
     console.log('connected to broswer');
-    soket.on('close', () => console.log('disconnected from browser'))
-    soket.on('message', message => {
-        sockets.forEach((aSocket) => aSocket.send(message.toString()))
+    socket.on('close', () => console.log('disconnected from browser'))
+    socket.on('message', msg => {
+        const message = JSON.parse(msg);
+        switch(message.type){
+            case "new_message":
+                sockets.forEach((aSocket) => aSocket.send(`${socket.nickname} : ${message.payload}`));
+            case "nickname":
+                socket.nickname = message.payload;
+        }
     })
 })
 // 위의 경우 http와 wss를 합친 상태다.
