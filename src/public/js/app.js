@@ -2,13 +2,25 @@ const socket = io();
 
 const welcome = document.querySelector('#welcome');
 const form = document.querySelector('form');
+const room = document.querySelector('#room');
+
+room.hidden = true;
+
+function showRoom() {
+    welcome.hidden = true;
+    room.hidden = false;
+    const h3 = document.querySelector('h3');
+    h3.innerText = `Room ${roomName}`;
+}
 
 function handleRoomSubmit(event){
     event.preventDefault();
     const input = document.querySelector('input');
-    socket.emit('enter_room', {payload: input.value}, () => {
-        console.log('server is done')
-    })
+    socket.emit('enter_room', 
+        input.value,
+        showRoom
+    )
+    roomName = input.value;
     input.value = '';
 }
 
