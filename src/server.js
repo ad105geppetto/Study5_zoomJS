@@ -14,6 +14,20 @@ const handleListen = () => console.log(`Listening on http://localhost:3000`);
 const httpServer = http.createServer(app);
 const wsServerio = SocketIO(httpServer);
 
+function publicRooms() {
+    const {sockets: {adapter: {sids, rooms}}} = wsServerio;
+    // 위의 코드는 아래의 코드와 동등하다.
+    // const sids = wsServerio.sockets.adapter.sids;
+    // const rooms = wsServerio.sockets.adapter.rooms;
+    const publicRooms = [];
+    rooms.forEach((_, key) => {
+        if(sids.get(key) === undefined){
+            publicRooms.push(key);
+        }
+    })
+    return publicRooms;
+}
+
 wsServerio.on('connection', socket => {
     socket['nickname'] = 'Anon';
     socket.onAny((event) => {
@@ -23,9 +37,13 @@ wsServerio.on('connection', socket => {
         socket.join(roomName)
         done();
         socket.to(roomName).emit('welcome', socket.nickname)
+        wsServerio.sockets.emit('room_change', publicRooms())
     })
     socket.on('disconnecting', () => {
         socket.rooms.forEach(room => socket.to(room).emit('bye', socket.nickname))
+    })
+    socket.on('disconnect', () => {
+        wsServerio.sockets.emit('room_change', publicRooms())
     })
     socket.on('new_message', (msg, room, done) => {
         socket.to(room).emit('new_message', `${socket.nickname}: ${msg}`);

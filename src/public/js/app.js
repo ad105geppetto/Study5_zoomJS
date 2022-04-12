@@ -66,6 +66,23 @@ socket.on('bye', (left) => {
 
 socket.on('new_message', addMessage)
 
+socket.on('room_change', (rooms) => {
+    const roomList = welcome.querySelector('ul');
+    roomList.innerHTML = '';
+    if(rooms.length === 0){
+        return;
+    }
+    rooms.forEach(room => {
+        const li = document.createElement('li');
+        li.innerText = room;
+        roomList.append(li);
+    })
+})
+
+// socket.on('room_change', console.log)
+// 위의 코드는 아래의 코드와 같다.
+// socket.on('room_change', (msg) => console.log(msg))
+
 // const messageList = document.querySelector('ul');
 // const nickForm = document.querySelector('#nick');
 // const messageForm = document.querySelector('#message');
