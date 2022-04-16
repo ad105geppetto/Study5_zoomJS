@@ -12,7 +12,15 @@ app.get('/', (_, res) => {res.render('home')})
 app.get('/*', (_, res) => {res.redirect('/')})
 
 const httpServer = http.createServer(app);
-const wsServer = SocketIO(httpServer)
+const wsServer = SocketIO(httpServer);
+
+wsServer.on("connection", socket => {
+  socket.on("join_room", (roomName, done) => {
+    socket.join(roomName)
+    done()
+    socket.to(roomName).emit("welcome")
+  })
+})
 
 httpServer.listen(port, () => {
   console.log(`listening on http://localhost:${port}`)
