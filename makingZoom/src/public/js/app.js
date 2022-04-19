@@ -112,6 +112,10 @@ async function handleWelcomSubmit (event) {
 
 welcomeForm.addEventListener('submit', handleWelcomSubmit);
 
+socket.on('ice', ice => {
+    console.log('received candidate')
+    myPeerConnection.addIceCandidate(ice);
+})
 
 // Socket Code
 
@@ -123,19 +127,34 @@ socket.on("welcome", async () => {
 })
 
 socket.on('offer',async offer => {
+    console.log('received the offer');
     myPeerConnection.setRemoteDescription(offer)
     const answer = await myPeerConnection.createAnswer()
     myPeerConnection.setLocalDescription(answer);
     socket.emit('answer', answer, roomName);
+    console.log('sent the answer');
 })
 
 socket.on('answer', answer => {
-    myPeerConnection.setRemoteDescription(answer)
+    socket.emit('ice', answer.candidate, roomName)
 })
 
 // RTC code
 
 function makeConnection() {
     myPeerConnection = new RTCPeerConnection();
+    myPeerConnection.addEventListener('icecandidate', handleIce)
+    myPeerConnection.addEventListener('addstream', handleAddStream)
     myStream.getTracks().forEach(track => myPeerConnection.addTrack(track, myStream))
+}
+
+function handleIce(data){
+    console.log('sent candidate')
+    console.log(data)
+}
+
+function handleAddStream(data){
+    const peersFace = document.getElementById('peersFace')
+    console.log("Peer's stream", data.stream)
+    peersFace.srcObject = data.stream
 }
